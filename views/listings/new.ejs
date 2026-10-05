@@ -1,0 +1,61 @@
+<% layout("/layouts/boilerplate") %>
+<div class="row mt-3">
+    <div class="col-8 offset-1">
+    <h3>Create a new listing</h3>
+    <form method="POST" action="/listings" class="needs-validation" novalidate enctype="multipart/form-data">
+        <div class="mb-3">
+        <label for="title" class="form-label">Hospital Name</label>
+        <input name="Listing[title]" placeholder="enter title" type = "text" class="form-control" required>
+        <div class="valid-feedback">Hospital</div>
+
+        </div>
+        <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea name="Listing[description]" class="form-control" required></textarea>
+        <div class="invalid-feedback">Please enter the short description</div>
+        </div>
+
+      
+
+        <div class="mb-3">
+        <label for="image" class="form-label"> Upload Image Link</label>
+        <input name="image" placeholder="enter image URL/Link" type="file" class="form-control" required>
+        </div>
+
+
+        <div class="mb-3">
+        <label for="bloodStock" class="form-label">Number of Blood Units in Stock</label>
+        <input id="bloodStock" name="Listing[bloodStock]" min="0" step="1" placeholder="Enter available units" type="number" class="form-control" required>
+        <div class="invalid-feedback">Please enter the no. of stock you have</div>
+        </div>
+
+        <fieldset class="mb-3">
+            <legend class="form-label">Available Blood Groups</legend>
+            <div class="row">
+                <% for (const group of bloodGroups) { %>
+                    <div class="col-6 col-md-3 form-check">
+                        <input class="form-check-input" type="checkbox" name="Listing[bloodGroups][]" value="<%= group %>" id="blood-group-<%= group %>">
+                        <label class="form-check-label" for="blood-group-<%= group %>"><%= group %></label>
+                    </div>
+                <% } %>
+            </div>
+            <div class="form-text">Select at least one available blood group.</div>
+        </fieldset>
+
+        <div class="mb-3">
+        <label for="location" class="form-label">Location</label>
+        <input name="Listing[location]" placeholder="enter location" type = "text" class="form-control" required>
+        <div class="invalid-feedback">Please enter the location</div>
+        </div>
+
+        <div class="mb-3">
+        <label for="country" class="form-label">Country</label>
+        <input name="Listing[country]" placeholder="enter country" type = "text" class="form-control" required>
+        <div class="invalid-feedback">Please enter the country name</div>
+        </div>
+
+        <button class="btn btn-dark  add-btn mt-3">ADD</button>
+    </form>
+    </div>
+    </div>
+    <script src="/script.js"></script>

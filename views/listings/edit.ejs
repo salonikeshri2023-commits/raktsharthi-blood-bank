@@ -1,0 +1,128 @@
+<% layout("/layouts/boilerplate") %>
+<div class="row mt-3">
+    <div class="col-8 offset-2">
+    <h3> Edit Your Listing</h3>
+    <form method="POST" action="/listings/<%=listing._id%>?_method=PUT"  class="needs-validation" enctype="multipart/form-data">
+        <div class="mb-3">
+        <label for="title" class="form-label">Title</label>
+        <input name="Listing[title]" value="<%= listing.title %>" type = "text" class="form-control" required>
+        <div class="valid-feedback">Title looks good!</div>
+        </div>
+        <div>
+        <label for="description" class="form-label">Description</label>
+        <textarea name="Listing[description]"  type="text" class="form-control" required ><%= listing.description %></textarea>
+        <div class="invalid-feedback">Please enter the short description</div>
+        </div>
+
+        <div >
+            Original Listing Image<br>
+            <img src="<%= originalUrlImage %>">
+        </div>
+
+        <div>
+        <label for="image" class="form-label">Upload New Image</label>
+        <input name="image"  type = "file" class="form-control">
+        <div class="invalid-feedback">Please enter the valid link</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="blood-stock-total">Total Blood Units in Stock</label>
+            <output id="blood-stock-total" class="form-control" aria-live="polite"><%= totalBloodStock.toLocaleString("en-IN") %></output>
+            <input id="blood-stock-value" name="Listing[bloodStock]" type="hidden" value="<%= totalBloodStock %>">
+        </div>
+        <fieldset class="mb-3">
+            <legend class="form-label">Blood Units by Group</legend>
+            <div class="row">
+                <% for (const group of bloodGroups) { %>
+                    <div class="col-6 col-md-3 mb-3">
+                        <div class="form-check">
+                            <input
+                                class="form-check-input blood-group-available"
+                                type="checkbox"
+                                name="Listing[bloodGroups][]"
+                                value="<%= group %>"
+                                id="blood-group-<%= group %>"
+                                <%= (listing.bloodGroups || []).includes(group) ? "checked" : "" %>
+                            >
+                            <label class="form-check-label" for="blood-group-<%= group %>"><%= group %></label>
+                        </div>
+                        <label class="form-label" for="blood-group-stock-<%= group %>">Units available</label>
+                        <input
+                            class="form-control blood-group-stock"
+                            id="blood-group-stock-<%= group %>"
+                            name="Listing[bloodGroupStock][<%= group %>]"
+                            type="number"
+                            min="0"
+                            step="1"
+                            value="<%= bloodGroupStock[group] ?? "" %>"
+                            aria-label="<%= group %> blood units available"
+                        >
+                    </div>
+                <% } %>
+            </div>
+            <div class="form-text">Enter the available units for each group. The total updates automatically.</div>
+        </fieldset>
+
+
+
+
+
+
+        <div>
+        <label for="location" class="form-label">Location</label> 
+        <input name="Listing[location]" value="<%= listing.location %>" type = "text" class="form-control" required>
+        <div class="invalid-feedback">Please enter the location</div>
+        </div>
+        <div>
+        <label for="country" class="form-label">Country</label>    
+        <input name="Listing[country]" value="<%= listing.country %>" type = "text" class="form-control">
+        </div>
+        <button class="btn btn-dark edit0btn mt-3">EDIT</button>
+    </form>
+    </div>
+</div>
+<script>
+    const bloodGroupInputs = document.querySelectorAll(".blood-group-stock");
+    const bloodGroupCheckboxes = document.querySelectorAll(".blood-group-available");
+    const bloodStockValue = document.getElementById("blood-stock-value");
+    const bloodStockTotal = document.getElementById("blood-stock-total");
+    const hasBloodGroupStock = <%= Object.keys(bloodGroupStock).length > 0 %>;
+    let groupStockHasBeenEdited = hasBloodGroupStock;
+    const formatBloodStock = new Intl.NumberFormat("en-IN");
+
+    function updateBloodStockTotal() {
+        if (!groupStockHasBeenEdited) {
+            return;
+        }
+
+        const total = Array.from(bloodGroupInputs).reduce((sum, input) => {
+            const checkbox = document.getElementById(input.id.replace("blood-group-stock-", "blood-group-"));
+            return checkbox.checked ? sum + (Number(input.value) || 0) : sum;
+        }, 0);
+
+        bloodStockValue.value = total;
+        bloodStockTotal.textContent = formatBloodStock.format(total);
+    }
+
+    bloodGroupInputs.forEach((input) => {
+        input.addEventListener("input", () => {
+            groupStockHasBeenEdited = true;
+            if (Number(input.value) > 0) {
+                document.getElementById(input.id.replace("blood-group-stock-", "blood-group-")).checked = true;
+            }
+            updateBloodStockTotal();
+        });
+    });
+    bloodGroupCheckboxes.forEach((checkbox) => {
+        checkbox.addEventListener("change", () => {
+            if (!checkbox.checked) {
+                document.getElementById(checkbox.id.replace("blood-group-", "blood-group-stock-")).value = "";
+            }
+            updateBloodStockTotal();
+        });
+    });
+
+    if (hasBloodGroupStock) {
+        updateBloodStockTotal();
+    }
+</script>

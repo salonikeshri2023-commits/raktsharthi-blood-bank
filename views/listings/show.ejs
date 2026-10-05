@@ -1,0 +1,251 @@
+<% layout("/layouts/boilerplate") %>
+<script>
+    const mapToken = "<%= process.env.MAP_TOKEN %>";
+    const listing = <%- JSON.stringify(listing) %>;
+
+    console.log("MAP TOKEN:", mapToken);
+    console.log("LISTING:", listing);
+    console.log("GEOMETRY:", listing.geometry);
+
+</script>
+
+<div class="row mt-3" id="upper">
+    <div class="col-8 offset-2">
+    <h3><%= listing.title%></h3>
+</div>
+    <div class="card col-6 offset-3">
+        <img src="<%= listing.image.url %>" class="card-img-top show-img" alt="listing_image">
+        <div class="card-body">
+            <p class="card-text"> Owned by <i><%= listing.owner.username %></i></p>
+                <p class="card-text"><%= listing.description %><br></p>
+                <p class="card-text"><%= Number(listing.bloodStock ?? listing.price ?? 0).toLocaleString("en-IN")%> Blood Units in Stock</p>
+                <p class="card-text"><%= (listing.bloodGroups || []).length %> blood group types available</p>
+                <p class="card-text">
+                    Blood Groups:
+                    <% if ((listing.bloodGroups || []).length) { %>
+                        <%= listing.bloodGroups.join(", ") %>
+                    <% } else { %>
+                        Not specified
+                    <% } %>
+                </p>
+                <h5 class="card-title">Blood Units by Group</h5>
+                <% if ((listing.bloodGroups || []).length) { %>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Blood group</th>
+                                    <th scope="col">Units available</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% for (const group of listing.bloodGroups) { %>
+                                    <tr>
+                                        <th scope="row"><%= group %></th>
+                                        <td>
+                                            <%= Object.prototype.hasOwnProperty.call(bloodGroupStock, group)
+                                                ? Number(bloodGroupStock[group]).toLocaleString("en-IN")
+                                                : "Not reported" %>
+                                        </td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <p class="card-text">No blood groups specified.</p>
+                <% } %>
+                <p class="card-text"><%= listing.location%></p>
+                <p class="card-text"><%=listing.country%>
+            </p>
+        </div>
+    </div>
+        </div>
+        <br>
+        <% if (currUser && listing.owner._id.equals(currUser._id) && urgentNotifications.length) { %>
+            <div class="col-6 offset-3" aria-live="polite">
+                <% for (const notification of urgentNotifications) { %>
+                    <% if (notification.requestingHospital) { %>
+                        <div class="msg alert alert-danger" role="status">
+                            <strong>🩸 Urgent blood request received</strong>
+                            <p class="mb-1">
+                                <%= notification.requestingHospital.title %> has raised an urgent blood request.
+                            </p>
+                            <p class="mb-1">
+                                Blood groups needed:
+                                <%= (notification.requestingHospital.bloodGroups || []).join(", ") || "Any blood group" %>
+                            </p>
+                            <a href="/listings/<%= notification.requestingHospital._id %>" class="alert-link">
+                                View requesting hospital
+                            </a>
+                        </div>
+                    <% } %>
+                <% } %>
+            </div>
+        <% } %>
+        <% if(currUser && listing.owner._id.equals(currUser._id))  {%>
+
+
+
+
+
+        
+<div class="tax-toggle">
+    <div class="form-check form-switch">
+        <input 
+            class="form-check-input" 
+            type="checkbox" 
+            role="switch" 
+            id="needBloodSwitch"
+            data-url="/listings/<%= listing._id %>/urgent"
+            <%= listing.urgentBloodNeeded ? "checked" : "" %>
+            aria-describedby="urgentStatusMessage"
+        >
+
+        <label class="form-check-label" for="needBloodSwitch">
+            🩸 Need Blood
+        </label>
+    </div>
+</div>
+<p id="urgentStatusMessage" class="form-text" role="status" aria-live="polite"></p>
+
+<div id="bloodRequestDiv" class="blood-request" style="display: <%= listing.urgentBloodNeeded ? "block" : "none" %>;">
+
+    <div class="card col-6 offset-3 mt-3">
+        <img 
+            src="<%= listing.image.url %>" 
+            class="card-img-top show-img" 
+            alt="listing_image"
+        >
+
+        <div class="card-body">
+            <p class="card-text">
+                Owned by <i><%= listing.owner.username %></i>
+            </p>
+
+            <p class="card-text">
+                <%= listing.description %>
+            </p>
+
+            <p class="card-text">
+                <%= Number(listing.bloodStock ?? listing.price ?? 0).toLocaleString("en-IN") %> Blood Units in Stock
+            </p>
+
+            <p class="card-text">
+                <%= (listing.bloodGroups || []).length %> blood group types available:
+                <%= (listing.bloodGroups || []).join(", ") || "Not specified" %>
+            </p>
+
+            <p class="card-text">
+                <%= listing.location %>
+            </p>
+
+            <p class="card-text">
+                <%= listing.country %>
+            </p>
+            <p class="emg">
+               🩸 Urgently Needed Blood
+            </p>
+        </div>
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <div class="btns">
+        <a href="/listings/<%=listing._id%>/edit" class="btn btn-dark">Edit</a>
+        <br><br>
+        <form method="POST" action="/listings/<%= listing._id%>?_method=DELETE">
+            <button class="btn btn-dark">DELETE</button>
+        </form>
+        </div>
+    <%}%>
+<hr>
+
+
+        <!-- <div class="col-8 offset-3"> -->
+            <% if(currUser) {%>
+            <h4>Leave a Review</h4>
+            <form action="/listings/<%= listing._id%>/reviews" method="POST" novalidate class="needs-validation">
+        
+                <div class="mb-3 mt-3">
+                    
+                    <label for="rating" class="form-label"> Rating</label>
+                <fieldset class="starability-slot">
+                    <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="0" checked aria-label="No rating.">
+                    <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="0" checked aria-label="No rating." />
+                    <input type="radio" id="first-rate1" name="review[rating]" value="1" />
+                    <label for="first-rate1" title="Terrible">1 star</label>
+                    <input type="radio" id="first-rate2" name="review[rating]" value="2" />
+                    <label for="first-rate2" title="Not good">2 stars</label>
+                    <input type="radio" id="first-rate3" name="review[rating]" value="3" />
+                    <label for="first-rate3" title="Average">3 stars</label>
+                    <input type="radio" id="first-rate4" name="review[rating]" value="4" />
+                    <label for="first-rate4" title="Very good">4 stars</label>
+                    <input type="radio" id="first-rate5" name="review[rating]" value="5" />
+                    <label for="first-rate5" title="Amazing">5 stars</label>
+                </fieldset>
+                </div>
+
+                <div class="mb-3 mt-3">
+                    <label for="comment" class="form-label">Comments</label>
+                    <textarea name="review[comment]" id="comment" cols="30" rows="5" class="form-control" required ></textarea>
+                    <div class="invalid-feedback">Please submit some comments for review</div>
+                </div>
+                <button class="btn btn-outline-dark">Submit</button>
+            </form>
+
+            <%}%>
+            <hr>
+
+
+        <% if(listing.reviews.length>0) {%>
+            <div class="row">
+                <p><b>All Review</b></p>
+            <% for(let review of listing.reviews){ %>
+                <div class="card col-5 mb-3 ms-3">
+                    <div class="card-body">
+                        <h5 class="card-title">@<%= review.author.username%></h5>
+                        <p class="starability-result card-text" data-rating="<%= review.rating %>"> Rated: 3 stars</p>
+                        <p class="card-text"><%= review.comment %></p>
+                        <p class="card-text"><%= review.rating %> star</p>
+                        <h3>Rated element name</h3>
+                        <form 
+                        class="mb-3"
+                        method="POST" 
+                        action="/listings/<%= listing._id %>/reviews/<%=review._id %>?_method=DELETE">
+                            <button class="btn btn-sm btn-dark">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            <%}%>
+            </div>
+        <%}%>
+        
+
+            <div class="col-8 offset-3 mb-3">
+                <h3>Where you'll be</h3>
+                <div id="map"></div>
+            </div>
+        </div>
+
+ <script src="/js/map.js"> </script>
+
+
+
+        
+

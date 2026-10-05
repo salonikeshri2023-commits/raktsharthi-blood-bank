@@ -1,0 +1,121 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <h2>Blood Stock Dashboard</h2>
+        <p class="text-muted">Current blood inventory and per-group units reported by each hospital.</p>
+    </div>
+</div>
+
+<div class="row g-3 mt-2">
+    <div class="col-12 col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Total Blood Units</h5>
+                <p class="display-6 mb-0"><%= totalBloodStock.toLocaleString("en-IN") %></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Blood Group Types Available</h5>
+                <p class="display-6 mb-0"><%= bloodGroupCount %> / 8</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Hospitals Listed</h5>
+                <p class="display-6 mb-0"><%= hospitalCount.toLocaleString("en-IN") %></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-2">
+    <div class="col-12">
+        <section class="card dashboard-chart-card" aria-labelledby="hospital-stock-heading">
+            <div class="card-body">
+                <h3 class="h5" id="hospital-stock-heading">Blood units by hospital</h3>
+                <p class="text-muted small">Each bar represents the total stock reported by one hospital.</p>
+                <% if (hospitalStockData.length) { %>
+                    <div class="dashboard-bar-chart" role="list" aria-label="Blood units reported by each hospital">
+                        <% for (const hospital of hospitalStockData) { %>
+                            <div class="dashboard-bar-row" role="listitem">
+                                <span class="dashboard-bar-label" title="<%= hospital.name %>"><%= hospital.name %></span>
+                                <div class="dashboard-bar-track" aria-hidden="true">
+                                    <div class="dashboard-bar dashboard-bar-stock" style="width: <%= hospital.percentage %>%"></div>
+                                </div>
+                                <span class="dashboard-bar-value"><%= hospital.units.toLocaleString("en-IN") %> units</span>
+                            </div>
+                        <% } %>
+                    </div>
+                <% } else { %>
+                    <p class="text-muted mb-0">No hospital inventory has been added yet.</p>
+                <% } %>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12">
+        <section class="card dashboard-chart-card" aria-labelledby="blood-groups-heading">
+            <div class="card-body">
+                <h3 class="h5" id="blood-groups-heading">Blood units by group across hospitals</h3>
+                <p class="text-muted small">Totals include hospitals that have reported a unit count for that group.</p>
+                <div class="dashboard-group-chart" role="list" aria-label="Blood units reported for each blood group">
+                    <% for (const item of bloodGroupData) { %>
+                        <div class="dashboard-group-item" role="listitem">
+                            <span class="dashboard-group-label"><%= item.group %></span>
+                            <div class="dashboard-bar-track" aria-hidden="true">
+                                <div class="dashboard-bar dashboard-bar-groups" style="width: <%= item.percentage %>%"></div>
+                            </div>
+                            <span class="dashboard-bar-value"><%= item.units.toLocaleString("en-IN") %> units · <%= item.hospitals %> hospitals</span>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12">
+        <section class="card dashboard-chart-card" aria-labelledby="hospital-groups-heading">
+            <div class="card-body">
+                <h3 class="h5" id="hospital-groups-heading">Blood group stock by hospital</h3>
+                <% if (hospitalStockData.length) { %>
+                    <div class="row g-3">
+                        <% for (const hospital of hospitalStockData) { %>
+                            <div class="col-12 col-md-6 col-xl-4">
+                                <article class="card h-100">
+                                    <div class="card-body">
+                                        <h4 class="h6"><%= hospital.name %></h4>
+                                        <p class="text-muted small"><%= hospital.units.toLocaleString("en-IN") %> total units</p>
+                                        <% if (hospital.groups.length) { %>
+                                            <ul class="list-group list-group-flush">
+                                                <% for (const item of hospital.groups) { %>
+                                                    <li class="list-group-item d-flex justify-content-between px-0">
+                                                        <span><%= item.group %></span>
+                                                        <span><%= item.units === null ? "Units not reported" : `${item.units.toLocaleString("en-IN")} units` %></span>
+                                                    </li>
+                                                <% } %>
+                                            </ul>
+                                        <% } else { %>
+                                            <p class="text-muted mb-0">No blood groups recorded.</p>
+                                        <% } %>
+                                    </div>
+                                </article>
+                            </div>
+                        <% } %>
+                    </div>
+                <% } else { %>
+                    <p class="text-muted mb-0">No hospital inventory has been added yet.</p>
+                <% } %>
+            </div>
+        </section>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="/listings" class="btn btn-dark">View Hospitals</a>
+</div>
